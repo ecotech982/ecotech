@@ -11,20 +11,25 @@ import ValueProposition from './components/ValueProposition';
 import Testimonials from './components/Testimonials';
 import ContactForm from './components/ContactForm';
 import Footer from './components/Footer';
+import LoginModal from './components/LoginModal';
+import { AuthProvider } from './context/AuthContext';
 
 export default function App() {
   return (
-    <div className="bg-gray-50 text-gray-800 font-sans antialiased selection:bg-brand-blue/30 selection:text-brand-blue">
-      <Navbar />
-      <main>
-        <Hero />
-        <About />
-        <Solutions />
-        <ValueProposition />
-        <Testimonials />
-        <ContactForm />
-      </main>
-      <Footer />
-    </div>
+    <AuthProvider>
+      <div className="bg-gray-50 text-gray-800 font-sans antialiased selection:bg-brand-blue/30 selection:text-brand-blue min-h-screen flex flex-col justify-between">
+        <Navbar />
+        <main>
+          <Hero />
+          <About />
+          <Solutions />
+          <ValueProposition />
+          <Testimonials />
+          <ContactForm />
+        </main>
+        <Footer />
+        <LoginModal />
+      </div>
+    </AuthProvider>
   );
 }

@@ -1,0 +1,19 @@
+{
+  "entities": {
+    "users": {
+      "title": "Users",
+      "description": "User profile data stored upon registration or login",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "providerId": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "lastLoginAt": { "type": "string" }
+      },
+      "required": ["uid", "email"]
+    }
+  }
+}
