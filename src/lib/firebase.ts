@@ -81,71 +81,17 @@ export async function syncUserWithFirestore(user: FirebaseUser): Promise<UserDat
 }
 
 /**
- * Save Google user data directly to Firestore database (fallback if popup blocked or domain unauthorized in container iframe)
- */
-export async function createFirestoreGoogleUser(
-  email: string = 'sutinisudjiman@gmail.com',
-  name: string = 'Pengguna Google ECOTECH',
-  photoURL: string | null = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80'
-): Promise<{ user: any, userData: UserData }> {
-  const cleanId = 'google_' + btoa(email.toLowerCase()).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
-  const userRef = doc(db, 'users', cleanId);
-  const userSnap = await getDoc(userRef);
-
-  const nowIso = new Date().toISOString();
-  const displayName = name || email.split('@')[0] || 'Pengguna Google';
-
-  const userData: UserData = {
-    uid: cleanId,
-    email: email,
-    displayName: displayName,
-    photoURL: photoURL,
-    providerId: 'google.com',
-    lastLoginAt: nowIso,
-  };
-
-  if (!userSnap.exists()) {
-    userData.createdAt = nowIso;
-  } else {
-    const existingData = userSnap.data();
-    if (existingData.createdAt) {
-      userData.createdAt = existingData.createdAt;
-    }
-  }
-
-  await setDoc(userRef, {
-    ...userData,
-    updatedAt: serverTimestamp()
-  }, { merge: true });
-
-  const customUser = {
-    uid: cleanId,
-    email: email,
-    displayName: displayName,
-    photoURL: photoURL,
-    providerData: [{ providerId: 'google.com' }]
-  };
-
-  localStorage.setItem('ecotech_saved_user', JSON.stringify({ user: customUser, userData }));
-
-  return { user: customUser, userData };
-}
-
-/**
  * Sign in with Google Account
  */
-export async function signInWithGoogle(customEmail?: string, customName?: string) {
+export async function signInWithGoogle() {
   try {
     const result = await signInWithPopup(auth, googleProvider);
     const user = result.user;
     const userData = await syncUserWithFirestore(user);
-    localStorage.setItem('ecotech_saved_user', JSON.stringify({ user, userData }));
     return { user, userData };
   } catch (error: any) {
-    console.warn('Google popup auth failed (iframe or domain restriction), syncing user directly with Firestore:', error);
-    const defaultEmail = customEmail || 'sutinisudjiman@gmail.com';
-    const defaultName = customName || 'Sutini Sudjiman';
-    return await createFirestoreGoogleUser(defaultEmail, defaultName);
+    console.error('Error signing in with Google:', error);
+    throw error;
   }
 }
 
