@@ -14,7 +14,7 @@ interface AuthContextType {
   user: FirebaseUser | null;
   userData: UserData | null;
   loading: boolean;
-  loginWithGoogle: (email?: string, name?: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   loginWithEmail: (email: string, pass: string) => Promise<void>;
   signUpWithEmail: (email: string, pass: string, name: string) => Promise<void>;
   logoutUser: () => Promise<void>;
@@ -65,10 +65,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => unsubscribe();
   }, []);
 
-  const handleLoginWithGoogle = async (customEmail?: string, customName?: string) => {
+  const handleLoginWithGoogle = async () => {
     setLoading(true);
     try {
-      const res = await signInWithGoogle(customEmail, customName);
+      const res = await signInWithGoogle();
       setUser(res.user);
       setUserData(res.userData);
       setIsLoginModalOpen(false);

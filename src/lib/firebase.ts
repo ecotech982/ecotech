@@ -83,11 +83,7 @@ export async function syncUserWithFirestore(user: FirebaseUser): Promise<UserDat
 /**
  * Sign in with Google Account
  */
-export async function signInWithGoogle(customEmail?: string, customName?: string) {
-  if (customEmail && customEmail.trim()) {
-    return await createFirestoreCustomUser(customEmail.trim(), customName, 'google.com');
-  }
-
+export async function signInWithGoogle() {
   try {
     const result = await signInWithPopup(auth, googleProvider);
     const user = result.user;
@@ -95,24 +91,6 @@ export async function signInWithGoogle(customEmail?: string, customName?: string
     return { user, userData };
   } catch (error: any) {
     console.error('Error signing in with Google:', error);
-
-    if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
-      throw error;
-    }
-
-    if (
-      error.code === 'auth/operation-not-allowed' || 
-      error.code === 'auth/unauthorized-domain' ||
-      error.code === 'auth/popup-blocked' ||
-      error.code === 'auth/internal-error' ||
-      error.code === 'auth/auth-domain-config-required' ||
-      error.message?.includes('operation-not-allowed')
-    ) {
-      const promptErr = new Error('GOOGLE_PROMPT_REQUIRED');
-      (promptErr as any).code = 'GOOGLE_PROMPT_REQUIRED';
-      throw promptErr;
-    }
-
     throw error;
   }
 }
@@ -120,25 +98,20 @@ export async function signInWithGoogle(customEmail?: string, customName?: string
 /**
  * Save custom user data directly to Firestore database (fallback if Email/Password provider disabled in Firebase Console)
  */
-export async function createFirestoreCustomUser(
-  email: string = 'sutinisudjiman@gmail.com', 
-  name: string = 'Sutini Sudjiman',
-  providerId: string = 'google.com'
-): Promise<{ user: any, userData: UserData }> {
+export async function createFirestoreCustomUser(email: string, name: string): Promise<{ user: any, userData: UserData }> {
   const cleanId = 'usr_' + btoa(email.toLowerCase()).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
   const userRef = doc(db, 'users', cleanId);
   const userSnap = await getDoc(userRef);
 
   const nowIso = new Date().toISOString();
-  const displayName = name || email.split('@')[0] || 'Mitra ECOTECH';
-  const photoURL = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=69c0ec&color=fff`;
+  const displayName = name || email.split('@')[0] || 'Pengguna ECOTECH';
 
   const userData: UserData = {
     uid: cleanId,
     email: email,
     displayName: displayName,
-    photoURL: photoURL,
-    providerId: providerId,
+    photoURL: null,
+    providerId: 'email',
     lastLoginAt: nowIso,
   };
 
@@ -160,8 +133,8 @@ export async function createFirestoreCustomUser(
     uid: cleanId,
     email: email,
     displayName: displayName,
-    photoURL: photoURL,
-    providerData: [{ providerId: providerId }]
+    photoURL: null,
+    providerData: [{ providerId: 'email' }]
   };
 
   localStorage.setItem('ecotech_saved_user', JSON.stringify({ user: customUser, userData }));
