@@ -18,6 +18,8 @@ import {
 } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
+import { setOAuthAccessToken } from './googleSheets';
+
 // Initialize Firebase App
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
@@ -25,12 +27,14 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 export const auth = getAuth(app);
 
 // Initialize Firestore (support named database if present in config)
-export const db = firebaseConfig.firestoreDatabaseId 
-  ? getFirestore(app, firebaseConfig.firestoreDatabaseId)
+const dbId = (firebaseConfig as Record<string, any>).firestoreDatabaseId;
+export const db = dbId 
+  ? getFirestore(app, dbId)
   : getFirestore(app);
 
-// Google Auth Provider
+// Google Auth Provider with Google Sheets Scope
 export const googleProvider = new GoogleAuthProvider();
+googleProvider.addScope('https://www.googleapis.com/auth/spreadsheets');
 googleProvider.setCustomParameters({
   prompt: 'select_account'
 });
@@ -86,9 +90,13 @@ export async function syncUserWithFirestore(user: FirebaseUser): Promise<UserDat
 export async function signInWithGoogle() {
   try {
     const result = await signInWithPopup(auth, googleProvider);
+    const credential = GoogleAuthProvider.credentialFromResult(result);
+    if (credential?.accessToken) {
+      setOAuthAccessToken(credential.accessToken);
+    }
     const user = result.user;
     const userData = await syncUserWithFirestore(user);
-    return { user, userData };
+    return { user, userData, accessToken: credential?.accessToken || null };
   } catch (error: any) {
     console.error('Error signing in with Google:', error);
     throw error;

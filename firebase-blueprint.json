@@ -14,6 +14,19 @@
         "lastLoginAt": { "type": "string" }
       },
       "required": ["uid", "email"]
+    },
+    "contact_messages": {
+      "title": "Contact Messages",
+      "description": "Messages submitted via the website contact form and synced to Google Sheets",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "message": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "syncedToSheets": { "type": "boolean" }
+      },
+      "required": ["name", "email", "message"]
     }
   }
 }
