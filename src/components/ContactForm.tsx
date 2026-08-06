@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { Mail, Send, User, MessageSquare, Phone } from 'lucide-react';
+import { Mail, Send, User, MessageSquare, Phone, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { motion } from 'motion/react';
+
+const WEBHOOK_URL = 'https://n8n-3ceafyuyasrd.litium.sumopod.my.id/webhook/bfaa35ad-1766-46c1-8376-cbd7d66e4a79';
 
 export default function ContactForm() {
   const [formData, setFormData] = useState({
@@ -8,17 +10,43 @@ export default function ContactForm() {
     email: '',
     message: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate form submission
-    console.log('Form submitted:', formData);
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
+    setIsSubmitting(true);
+    setErrorMessage(null);
+
+    try {
+      const response = await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          message: formData.message,
+          timestamp: new Date().toISOString(),
+          source: 'ECOTECH Landing Page'
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Gagal terhubung ke webhook (${response.status})`);
+      }
+
+      setSubmitted(true);
       setFormData({ name: '', email: '', message: '' });
-    }, 3000);
+    } catch (err: any) {
+      console.error('Error sending message to webhook:', err);
+      // Fallback: Show friendly alert if CORS or network issue occurs
+      setErrorMessage('Terjadi kendala saat mengirim pesan. Silakan coba lagi atau hubungi via WhatsApp.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -148,19 +176,36 @@ export default function ContactForm() {
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-center py-12"
+                  className="text-center py-10 px-4"
                 >
-                  <div className="w-20 h-20 bg-brand-green/20 text-brand-green rounded-full flex items-center justify-center mx-auto mb-6">
-                    <Send className="w-10 h-10" />
+                  <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xs">
+                    <CheckCircle className="w-10 h-10" />
                   </div>
                   <h4 className="text-2xl font-bold text-gray-900 mb-2">Terima Kasih!</h4>
-                  <p className="text-gray-600">Pesan Anda telah kami terima. Kami akan segera menghubungi Anda melalui email.</p>
+                  <p className="text-gray-600 max-w-md mx-auto mb-6">Pesan Anda telah berhasil terkirim ke sistem kami via Webhook. Tim ECOTECH akan segera merespon pesan Anda.</p>
+                  <button
+                    onClick={() => setSubmitted(false)}
+                    className="px-6 py-2.5 border-2 border-brand-blue/30 text-brand-blue hover:bg-brand-blue hover:text-white rounded-full font-bold text-sm transition-all duration-200"
+                  >
+                    Kirim Pesan Lain
+                  </button>
                 </motion.div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <h4 className="text-xl font-bold text-gray-900 mb-1">Hubungi via Email</h4>
                   <p className="text-sm text-gray-500 mb-4">Kami akan membalas pesan email Anda dalam waktu 1x24 jam kerja.</p>
                   
+                  {errorMessage && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-2xl"
+                    >
+                      <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                      <span>{errorMessage}</span>
+                    </motion.div>
+                  )}
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <label htmlFor="name" className="text-sm font-semibold text-gray-700 ml-1">
@@ -178,6 +223,7 @@ export default function ContactForm() {
                           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                           className="block w-full pl-11 pr-4 py-4 bg-white border border-gray-200 rounded-2xl focus:ring-2 focus:ring-brand-blue focus:border-brand-blue transition-all"
                           placeholder="Masukkan nama Anda"
+                          disabled={isSubmitting}
                         />
                       </div>
                     </div>
@@ -197,6 +243,7 @@ export default function ContactForm() {
                           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                           className="block w-full pl-11 pr-4 py-4 bg-white border border-gray-200 rounded-2xl focus:ring-2 focus:ring-brand-blue focus:border-brand-blue transition-all"
                           placeholder="email@perusahaan.com"
+                          disabled={isSubmitting}
                         />
                       </div>
                     </div>
@@ -217,17 +264,28 @@ export default function ContactForm() {
                         onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                         className="block w-full pl-11 pr-4 py-4 bg-white border border-gray-200 rounded-2xl focus:ring-2 focus:ring-brand-blue focus:border-brand-blue transition-all resize-none"
                         placeholder="Bagaimana kami bisa membantu Anda?"
+                        disabled={isSubmitting}
                       />
                     </div>
                   </div>
                   <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    whileHover={{ scale: isSubmitting ? 1 : 1.02 }}
+                    whileTap={{ scale: isSubmitting ? 1 : 0.98 }}
                     type="submit"
-                    className="w-full py-5 gradient-bg text-white font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-3 text-lg"
+                    disabled={isSubmitting}
+                    className="w-full py-5 gradient-bg text-white font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-3 text-lg disabled:opacity-60 cursor-pointer disabled:cursor-not-allowed"
                   >
-                    <Send className="w-5 h-5" />
-                    Kirim Pesan Email
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <span>Mengirim Pesan...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-5 h-5" />
+                        <span>Kirim Pesan Email</span>
+                      </>
+                    )}
                   </motion.button>
                 </form>
               )}
