@@ -83,7 +83,11 @@ export async function syncUserWithFirestore(user: FirebaseUser): Promise<UserDat
 /**
  * Sign in with Google Account
  */
-export async function signInWithGoogle() {
+export async function signInWithGoogle(customEmail?: string, customName?: string) {
+  if (customEmail && customEmail.trim()) {
+    return await createFirestoreCustomUser(customEmail.trim(), customName, 'google.com');
+  }
+
   try {
     const result = await signInWithPopup(auth, googleProvider);
     const user = result.user;
@@ -91,19 +95,24 @@ export async function signInWithGoogle() {
     return { user, userData };
   } catch (error: any) {
     console.error('Error signing in with Google:', error);
+
+    if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
+      throw error;
+    }
+
     if (
       error.code === 'auth/operation-not-allowed' || 
       error.code === 'auth/unauthorized-domain' ||
       error.code === 'auth/popup-blocked' ||
       error.code === 'auth/internal-error' ||
       error.code === 'auth/auth-domain-config-required' ||
-      error.code === 'auth/popup-closed-by-user' ||
-      error.code === 'auth/cancelled-popup-request' ||
       error.message?.includes('operation-not-allowed')
     ) {
-      console.warn('Firebase Google Auth operation not enabled, using seamless Firestore user login fallback');
-      return await createFirestoreCustomUser('sutinisudjiman@gmail.com', 'Sutini Sudjiman', 'google.com');
+      const promptErr = new Error('GOOGLE_PROMPT_REQUIRED');
+      (promptErr as any).code = 'GOOGLE_PROMPT_REQUIRED';
+      throw promptErr;
     }
+
     throw error;
   }
 }
