@@ -142,7 +142,7 @@ export default function LoginModal() {
                       d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.37 0 3.31 2.7 1.32 6.6l4 3.13c.94-2.82 3.58-4.98 6.68-4.98z"
                     />
                   </svg>
-                  <span className="text-sm font-semibold">Masuk dengan Akun Google</span>
+                  <span className="text-sm font-semibold">Masuk Akun dengan Akun Google</span>
                 </>
               )}
             </button>
