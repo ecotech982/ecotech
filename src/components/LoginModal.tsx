@@ -28,7 +28,6 @@ export default function LoginModal() {
     setIsSubmitting(true);
     try {
       await loginWithGoogle();
-      closeLoginModal();
     } catch (err: any) {
       console.error(err);
       if (err.code === 'auth/popup-closed-by-user') {
@@ -59,7 +58,6 @@ export default function LoginModal() {
         }
         await signUpWithEmail(email, password, name);
       }
-      closeLoginModal();
     } catch (err: any) {
       console.error(err);
       if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
