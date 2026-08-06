@@ -29,12 +29,10 @@ export default function LoginModal() {
     try {
       await loginWithGoogle();
     } catch (err: any) {
-      console.error(err);
-      if (err.code === 'auth/popup-closed-by-user') {
+      if (err?.code === 'auth/popup-closed-by-user' || err?.code === 'auth/cancelled-popup-request') {
         setError('Proses login Google dibatalkan.');
-      } else if (err.code === 'auth/cancelled-popup-request') {
-        setError('Permintaan login dibatalkan.');
       } else {
+        console.error('Google login error:', err);
         setError('Gagal masuk dengan Google. Silakan coba lagi.');
       }
     } finally {

@@ -9,8 +9,12 @@ export default function Hero() {
   const handleHeroGoogleLogin = async () => {
     try {
       await loginWithGoogle();
-    } catch (err) {
-      console.error('Direct Google login failed from hero, opening login modal:', err);
+    } catch (err: any) {
+      if (err?.code === 'auth/popup-closed-by-user' || err?.code === 'auth/cancelled-popup-request') {
+        // User voluntarily closed the popup, no need to log error or open modal
+        return;
+      }
+      console.warn('Direct Google login failed from hero, opening login modal:', err);
       openLoginModal();
     }
   };

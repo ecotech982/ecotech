@@ -92,7 +92,9 @@ export async function signInWithGoogle() {
     const userData = await syncUserWithFirestore(user);
     return { user, userData };
   } catch (error: any) {
-    console.error('Error signing in with Google:', error);
+    if (error?.code !== 'auth/popup-closed-by-user' && error?.code !== 'auth/cancelled-popup-request') {
+      console.error('Error signing in with Google:', error);
+    }
     throw error;
   }
 }
