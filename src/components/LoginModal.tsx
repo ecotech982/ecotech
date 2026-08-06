@@ -114,28 +114,37 @@ export default function LoginModal() {
             <button
               onClick={handleGoogleLogin}
               disabled={isSubmitting || loading}
-              className="w-full flex items-center justify-center gap-3 py-3.5 px-4 bg-white hover:bg-gray-50 text-gray-800 font-bold border-2 border-gray-200 hover:border-brand-blue/50 rounded-2xl shadow-xs hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed group relative overflow-hidden"
+              className="w-full flex items-center justify-center gap-3 py-3.5 px-4 bg-white hover:bg-gray-50 text-gray-800 font-bold border-2 border-gray-200 hover:border-brand-blue/50 rounded-2xl shadow-xs hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed group relative overflow-hidden cursor-pointer"
             >
-              {/* Google Colored Icon */}
-              <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
-                <path
-                  fill="#4285F4"
-                  d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
-                />
-                <path
-                  fill="#34A853"
-                  d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.1 0-5.74-2.09-6.68-4.91H1.32v3.13C3.31 21.3 7.37 24 12 24z"
-                />
-                <path
-                  fill="#FBBC05"
-                  d="M5.32 14.27c-.24-.72-.38-1.49-.38-2.27s.14-1.55.38-2.27V6.6H1.32C.48 8.27 0 10.08 0 12s.48 3.73 1.32 5.4l4 3.13c.24-.72.38-1.49.38-2.26z"
-                />
-                <path
-                  fill="#EA4335"
-                  d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.37 0 3.31 2.7 1.32 6.6l4 3.13c.94-2.82 3.58-4.98 6.68-4.98z"
-                />
-              </svg>
-              <span className="text-sm font-semibold">Masuk dengan Akun Google</span>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin text-brand-blue" />
+                  <span className="text-sm font-semibold">Menghubungkan Akun Google...</span>
+                </>
+              ) : (
+                <>
+                  {/* Google Colored Icon */}
+                  <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
+                    <path
+                      fill="#4285F4"
+                      d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
+                    />
+                    <path
+                      fill="#34A853"
+                      d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.1 0-5.74-2.09-6.68-4.91H1.32v3.13C3.31 21.3 7.37 24 12 24z"
+                    />
+                    <path
+                      fill="#FBBC05"
+                      d="M5.32 14.27c-.24-.72-.38-1.49-.38-2.27s.14-1.55.38-2.27V6.6H1.32C.48 8.27 0 10.08 0 12s.48 3.73 1.32 5.4l4 3.13c.24-.72.38-1.49.38-2.26z"
+                    />
+                    <path
+                      fill="#EA4335"
+                      d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.37 0 3.31 2.7 1.32 6.6l4 3.13c.94-2.82 3.58-4.98 6.68-4.98z"
+                    />
+                  </svg>
+                  <span className="text-sm font-semibold">Masuk dengan Akun Google</span>
+                </>
+              )}
             </button>
 
             {/* Divider */}

@@ -18,8 +18,6 @@ import {
 } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
-import { setOAuthAccessToken } from './googleSheets';
-
 // Initialize Firebase App
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
@@ -27,14 +25,14 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 export const auth = getAuth(app);
 
 // Initialize Firestore (support named database if present in config)
-const dbId = (firebaseConfig as Record<string, any>).firestoreDatabaseId;
-export const db = dbId 
-  ? getFirestore(app, dbId)
+export const db = firebaseConfig.firestoreDatabaseId 
+  ? getFirestore(app, firebaseConfig.firestoreDatabaseId)
   : getFirestore(app);
 
-// Google Auth Provider with Google Sheets Scope
+// Google Auth Provider
 export const googleProvider = new GoogleAuthProvider();
-googleProvider.addScope('https://www.googleapis.com/auth/spreadsheets');
+googleProvider.addScope('email');
+googleProvider.addScope('profile');
 googleProvider.setCustomParameters({
   prompt: 'select_account'
 });
@@ -63,7 +61,7 @@ export async function syncUserWithFirestore(user: FirebaseUser): Promise<UserDat
     email: user.email,
     displayName: user.displayName || user.email?.split('@')[0] || 'Pengguna ECOTECH',
     photoURL: user.photoURL || null,
-    providerId: user.providerData[0]?.providerId || 'email',
+    providerId: user.providerData[0]?.providerId || 'google.com',
     lastLoginAt: nowIso,
   };
 
@@ -85,18 +83,14 @@ export async function syncUserWithFirestore(user: FirebaseUser): Promise<UserDat
 }
 
 /**
- * Sign in with Google Account
+ * Sign in with real Google Account using Firebase signInWithPopup
  */
 export async function signInWithGoogle() {
   try {
     const result = await signInWithPopup(auth, googleProvider);
-    const credential = GoogleAuthProvider.credentialFromResult(result);
-    if (credential?.accessToken) {
-      setOAuthAccessToken(credential.accessToken);
-    }
     const user = result.user;
     const userData = await syncUserWithFirestore(user);
-    return { user, userData, accessToken: credential?.accessToken || null };
+    return { user, userData };
   } catch (error: any) {
     console.error('Error signing in with Google:', error);
     throw error;

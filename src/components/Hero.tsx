@@ -4,7 +4,16 @@ import Logo from './Logo';
 import { useAuth } from '../context/AuthContext';
 
 export default function Hero() {
-  const { user, userData, openLoginModal } = useAuth();
+  const { user, userData, openLoginModal, loginWithGoogle } = useAuth();
+
+  const handleHeroGoogleLogin = async () => {
+    try {
+      await loginWithGoogle();
+    } catch (err) {
+      console.error('Direct Google login failed from hero, opening login modal:', err);
+      openLoginModal();
+    }
+  };
 
   return (
     <section className="relative pt-32 pb-20 lg:pt-44 lg:pb-28 overflow-hidden">
@@ -85,8 +94,8 @@ export default function Hero() {
           
           {!user ? (
             <button
-              onClick={openLoginModal}
-              className="bg-white text-gray-800 border-2 border-brand-blue/40 px-8 py-5 rounded-full font-bold shadow-sm hover:border-brand-blue hover:text-brand-blue hover:bg-brand-blue/5 transition duration-300 flex items-center justify-center gap-2 text-lg"
+              onClick={handleHeroGoogleLogin}
+              className="bg-white text-gray-800 border-2 border-brand-blue/40 px-8 py-5 rounded-full font-bold shadow-sm hover:border-brand-blue hover:text-brand-blue hover:bg-brand-blue/5 transition duration-300 flex items-center justify-center gap-2 text-lg cursor-pointer"
             >
               <LogIn className="w-5 h-5 text-brand-blue" />
               Masuk dengan Google
